@@ -17,8 +17,9 @@ const char *szPubkey = "-----BEGIN PUBLIC KEY-----\n"
 
 static int32_t callback_write(const uint8_t* pBuffer, uint32_t length, void *context, uint32_t *pBytesWritten)
 {
-   size_t res = fwrite(pBuffer, 1, length, (FILE*)context);
-   *pBytesWritten = (uint32_t)res;
+   (void)(length);
+   fwrite(pBuffer, 1, 1, (FILE*)context);
+   *pBytesWritten = (uint32_t)1;
    if (ferror(context))
    {
        return errno;
@@ -59,7 +60,14 @@ int main()
       fprintf(stderr, " [!] Public key set failed with code %" PRIX64 "\n", (uint64_t)status);
       return (int)status;
    }
-   
+
+   status = mla_config_set_compression_level(hConfig, 10);
+   if (status != MLA_STATUS(MLA_STATUS_SUCCESS))
+   {
+      fprintf(stderr, " [!] Compression level set failed with code %" PRIX64 "\n", (uint64_t)status);
+      return (int)status;
+   }
+
    MLAArchiveHandle hArchive = NULL;
    status = mla_archive_new(&hConfig, &callback_write, &callback_flush, f, &hArchive);
    if (status != MLA_STATUS(MLA_STATUS_SUCCESS))
